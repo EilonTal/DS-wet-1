@@ -200,36 +200,38 @@ StatusType AVLTree<T>::deleteThisElement(std::shared_ptr<AVLTree> v)
     }
 }
 
-bool AVLTree::isLeaf()
+template<class T>
+bool AVLTree<T>::isLeaf()
 {
     return right_tree == nullptr && left_tree == nullptr;
 }
 
-bool AVLTree::isRoot()
+template<class T>
+bool AVLTree<T>::isRoot()
 {
     return father == nullptr;
 }
 
 template<class T>
-std::shared_ptr<AVLTree<T>> AVLtree::getLeftTree()
+std::shared_ptr<AVLTree<T>> AVLTree<T>::getLeftTree()
 {
     return left_tree;
 }
 
 template<class T>
-std::shared_ptr<AVLTree<T>> AVLtree::getRightTree()
+std::shared_ptr<AVLTree<T>> AVLTree<T>::getRightTree()
 {
     return right_tree;
 }
 
 template<class T>
-std::shared_ptr<AVLTree<T>> AVLtree::getFather()
+std::shared_ptr<AVLTree<T>> AVLTree<T>::getFather()
 {
     return father;
 }
 
 template<class T>
-std::shared_ptr<AVLTree<T>> AVLtree::getFirst()
+std::shared_ptr<AVLTree<T>> AVLTree<T>::getFirst()
 {
     return first;
 }
