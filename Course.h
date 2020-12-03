@@ -1,11 +1,14 @@
 #include "Class.h"
+#include "library.h"
 class Course
 {
 private:
     int courseId;
     int numOfClasses;
-    std::shared_ptr<Class>* classes;
+    Class** classes;
+    const static int null_course = -1;
 public:
+    Course();
     Course(int courseId, int numOfClasses);
     ~Course();
     Course(Course& c);
@@ -13,8 +16,12 @@ public:
     bool operator<(Course& c);
     bool operator>(Course& c);
     bool operator==(Course& c);
+    bool operator<(int id);
+    bool operator>(int id);
+    bool operator==(int id);
     int getNumOfClasses();
     int getCourseId();
-    std::shared_ptr<Class>& getClass(int classId);
+    StatusType addClass(Class& c);
+    Class* getClass(int classId);
 };
 

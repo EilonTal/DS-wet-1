@@ -8,14 +8,11 @@ private:
     AVLTree *right_tree;
     AVLTree *father;
     AVLTree *first;
+    const int height_of_queen = -1;
     int height;
     int balance;
     T data;
-
-    /*
-	* create new part in the tree
-	*/
-    AVLTree(T &element);
+    AVLTree(T &);
     /*
 	* return the height of the left tree
 	* if has no left return 0
@@ -85,7 +82,10 @@ private:
     template <class Id>
     AVLTree<T> *getNodeAux(Id &data_in);
     template <class Id>
-    AVLTree<T> *getNode(Id &data_in);
+    AVLTree<T> *getNodeFromId(Id &data_in);
+
+    void getBestElementsAux(T *&element, AVLTree<T> *v, int num_of_elements, int &i);
+    
 
 public:
     /*
@@ -104,21 +104,26 @@ public:
     StatusType insertElement(T &element);
     template <class Id>
     StatusType deleteElement(Id &data);
-    //template <class Id>
-    //StatusType getElement(Id &data_in, T &element=T());
-    template <class S>
-    AVLTree<T> *getBestElements(int num_of_elements);
+
+    template <class Id>
+    T* getElement(Id &data_in);
+
+    T *getBestElements(int num_of_elements, int &counter_of_elements);
 
     //just for chacking:
     AVLTree *getLeftTree();
     AVLTree *getRightTree();
-    T getData();
+    T& getData();
     AVLTree *getTree();
+    T& getFirst()
+    {
+        return first->data;
+    }
 };
 
 template <class T>
 AVLTree<T>::AVLTree()
-    : data(T()), height(-1), first(nullptr), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
+    : data(T()), height(height_of_queen), first(nullptr), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
 {
 }
 
@@ -134,10 +139,12 @@ AVLTree<T>::~AVLTree()
     if (left_tree != nullptr)
     {
         delete left_tree;
+        left_tree = nullptr;
     }
     if (right_tree != nullptr)
     {
         delete right_tree;
+        right_tree = nullptr;
     }
 }
 
@@ -172,6 +179,7 @@ StatusType AVLTree<T>::insertElementAux(T &element)
     if (data > element)
     {
         return_value = insertToLeft(element);
+        first = left_tree->first;
     }
     else
     {
@@ -189,6 +197,7 @@ StatusType AVLTree<T>::insertToLeft(T &element)
     {
         left_tree = new AVLTree(element);
         left_tree->father = this;
+        first = left_tree;
     }
     else
     {
@@ -322,8 +331,17 @@ void AVLTree<T>::LL()
     if (AR_temp != nullptr)
     {
         AR_temp->father = B;
-    }    
+    }
 
+    //update first
+    if (B->left_tree != nullptr)
+    {
+        B->first = B->left_tree->first;
+    }
+    else
+    {
+        B->first = B;
+    }
     //update height and balance
     B->height = B->calculateHeight();
     B->balance = B->calculateBalance();
@@ -350,6 +368,9 @@ void AVLTree<T>::RR()
         AL_temp->father = B;
     }
 
+    //update first
+    A->first = B->first;
+
     //update height and balance
     B->height = B->calculateHeight();
     B->balance = B->calculateBalance();
@@ -372,16 +393,15 @@ void AVLTree<T>::RL()
     RR();
 }
 
+template <class T>
 template <class Id>
-StatusType deleteElement(Id &data)
+StatusType AVLTree<T>::deleteElement(Id &data)
 {
-    AVLTree<T> *element_ptr = getNode(data);
-    if (element_ptr == nullptr)
+    if (left_tree != nullptr)
     {
-        return FAILURE;
+        return left_tree->deleteElementAux(data);
     }
-    deleteThisElement(element_ptr);
-
+    return FAILURE;
 }
 
 template <class T>
@@ -389,36 +409,41 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
 {
     if (v->right_tree != nullptr && v->left_tree != nullptr)
     {
-        AVLTree<T> *next = getNextInorder();
-        switchPlaces(next);
+        AVLTree<T> *next = v->getNextInorder();
+        v->switchPlaces(next);
         deleteThisElement(next);
 
     }
     else
     {
-        if (isLeaf())
+        if (v->isLeaf())
         {
-            if (isLeft())
+            if (v->isLeft())
             {
                 v->father->left_tree = nullptr;
+                v->father->first = v->father;
                 delete v;
+                v = nullptr;
             }
             else
             {
                 v->father->right_tree = nullptr;
                 delete v;
+                v = nullptr;
             }
             
         }
-        else if (left_tree == nullptr)
+        else if (v->left_tree == nullptr)
         {
             v->changetoRoot(right_tree);
             delete v;
+            v = nullptr; 
         }
         else
         {
             v->changetoRoot(left_tree);
             delete v;
+            v = nullptr;
         }
         
     }
@@ -428,8 +453,8 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
 template <class T>
 void AVLTree<T>::switchPlaces(AVLTree<T> *v)
 {
-    T tmp = v.data;
-    v.data = data;
+    T tmp = v->data;
+    v->data = data;
     data = tmp;
 }
 
@@ -458,7 +483,7 @@ AVLTree<T> *AVLTree<T>::getRightTree()
 }
 
 template <class T>
-T AVLTree<T>::getData()
+T& AVLTree<T>::getData()
 {
     return data;
 }
@@ -489,11 +514,11 @@ AVLTree<T> *AVLTree<T>::getTree()
 
 template <class T>
 template <class Id>
-AVLTree<T> *AVLTree<T>::getNode(Id &data_in)
+AVLTree<T> *AVLTree<T>::getNodeFromId(Id &data_in)
 {
     if (left_tree == nullptr)
     {
-        return FAILURE;
+        return nullptr;
     }
     return left_tree->getNodeAux(data_in);
 }
@@ -515,23 +540,93 @@ AVLTree<T> *AVLTree<T>::getNodeAux(Id &data_in)
 
 template <class T>
 template <class Id>
-AVLTree<T> *AVLTree<T>::getNodeAux(Id &data_in)
+StatusType AVLTree<T>::deleteElementAux(Id &data_in)
 {
     if (this == nullptr || isLeaf())
     {
-        return nullptr;
+        return FAILURE;
     }
     if (left_tree != nullptr && left_tree->data == data_in)
     {
         deleteThisElement(left_tree);
+        if (left_tree != nullptr) 
+        {
+            first = left_tree->first;
+        }
+        else
+        {
+            first = this;
+        }
     }
-    if (right_tree != nullptr && right_tree->data == data_in)
+    else if (right_tree != nullptr && right_tree->data == data_in)
     {
         deleteThisElement(right_tree);
     }
-    if (data > data_in)
+    else if (data > data_in)
     {
-        return left_tree->getNodeAux(data_in);
+        if (left_tree->deleteElementAux(data_in) == FAILURE)
+        {
+            return FAILURE;
+        }
+        first = left_tree->first;
     }
-    return right_tree->getNodeAux(data_in);
+    else
+    {
+        if (right_tree->deleteElementAux(data_in) == FAILURE)
+        {
+            return FAILURE;
+        }
+    }
+    doRoll();
+    return SUCCESS;
+}
+
+template <class T>
+T *AVLTree<T>::getBestElements(int num_of_elements, int &counter_of_elements)
+{
+    if (num_of_elements == 0)
+    {
+        return nullptr;
+    }
+    counter_of_elements = 0;
+    T* arr_of_elements = new T[num_of_elements];
+    getBestElementsAux(arr_of_elements, left_tree->first, num_of_elements, counter_of_elements);
+    return arr_of_elements;
+}
+
+template <class T>
+void AVLTree<T>::getBestElementsAux(T *&element, AVLTree<T>* v, int num_of_elements, int &i)
+{
+    if (v == nullptr || v->height == height_of_queen)
+    {
+        return;
+    }
+    if (num_of_elements == i)
+    {
+        return;
+    }
+    T new_element(v->data);
+    element[i] = new_element;
+    i++;
+    if (v->right_tree != nullptr)
+    {
+        getBestElementsAux(element, v->right_tree, num_of_elements, i);
+    }
+    if (num_of_elements == i)
+    {
+        return;
+    }
+    getBestElementsAux(element, v->father, num_of_elements, i);
+}
+
+template <class T>
+template <class Id>
+T *AVLTree<T>::getElement(Id &data_in)
+{
+    AVLTree<T> *node = getNodeFromId(data_in);
+    if (node == nullptr)
+    {
+        return nullptr;
+    }
+    return &node->data;
 }

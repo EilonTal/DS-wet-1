@@ -1,7 +1,7 @@
 #include "AVLTree.h"
 template<class T>
-AVLTree<T>::AVLTree(T& data):
-: data(data), first(this), height(1), father(nullptr)
+AVLTree<T>::AVLTree(T& element)
+    : data(element), first(this), height(1), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
 {
 }
 
@@ -9,7 +9,7 @@ template<class T>
 StatusType AVLTree<T>::insertElement(T &element)
 {
     StatusType return_value = SUCCESS;
-    if (data == element)
+    if (data == element) 
     {
         return FAILURE;
     }
@@ -22,14 +22,14 @@ StatusType AVLTree<T>::insertElement(T &element)
         return_value = insertToRight(element);
     }
     doRoll();
-    return return_value
+    return return_value;
 }
 
 template<class T>
 StatusType AVLTree<T>::insertToLeft(T& element)
 {
     StatusType return_value = SUCCESS;
-    if (left_tree == nullptr)
+    if (left_tree == nullptr) 
     {
         left_tree = std::shared_ptr<AVLTree>(AVLTree(element));
         left_tree->father = this;
@@ -45,9 +45,9 @@ template<class T>
 StatusType AVLTree<T>::insertToRight(T& element)
 {
     StatusType return_value = SUCCESS;
-    if (right_tree == nullptr)
+    if (right_tree == nullptr) 
     {
-        right_tree = std::shared_ptr<AVLTree>(AVLTree(element));
+        right_tree = std::shared_ptr<AVLTree>(AVLTree(element));   
         right_tree->father = this;
 
     }
@@ -85,17 +85,17 @@ int AVLTree<T>::calculateHeight()
 }
 
 template<class T>
-int AVLTree<T>::calculateBalance()
+int AVLTree<T>::calculateBalance() 
 {
     return getLeftHeight()-getRightHeight();
 }
 
 template<class T>
-void AVLTree<T>::doRoll()
+void AVLTree<T>::doRoll() 
 {
     height = calculateHeight();
     balance = calculateBalance();
-    if (balance > 1)
+    if (balance > 1) 
     {
         if (left_tree->balance >= 0)
         {
@@ -112,7 +112,7 @@ void AVLTree<T>::doRoll()
         RL();
     }
     height = calculateHeight();
-    balance = calculateBalance();
+    balance = calculateBalance();   
 }
 
 template<class T>
@@ -131,7 +131,7 @@ void AVLTree<T>::LL()
     // rolling previous right son of A to be left son of B
     this->right_tree->left_tree = AR_temp;
     this->right_tree->left_tree->father = this->right_tree;
-
+    
     //update height and balance
     this->right_tree->height = this->right_tree->calculateHeight();
     this->right_tree->balance = this->right_tree->calculateBalance();
@@ -186,18 +186,60 @@ template<class Id>
 StatusType AVLTree<T>::deleteElement(Id &id)
 {
     std::shared_ptr<AVLTree> v = getElementPointer(id);
+    deleteThisElement(v);
+    calculateFirst();
 
 }
+
 template<class T>
 StatusType AVLTree<T>::deleteThisElement(std::shared_ptr<AVLTree> v)
 {
-    if (isLeaf)
+    if (right_tree != nullptr && left_tree != nullptr)
     {
-        if (father->left_tree == v)
-        {
-
-        }
+        swichPlaces(getNextInorder());   
     }
+    else
+    {
+        std::shared_ptr<AVLTree> to_father;
+        if (isLeaf)
+        {
+            to_father = nullptr;
+        }
+        else if (left_tree == nullptr)
+        {
+            to_father = right_tree;
+            right_tree->father = father;
+        }
+        else
+        {
+            to_father = left_tree;
+            left_tree->father = father;
+        }
+        if (father == nullptr) 
+        {
+            root = to_father;
+        }
+        else
+        {
+            if (father->left_tree == v)
+            {
+                father->left_tree = to_father;
+            }
+            else
+            {
+                father->right_tree = to_father;
+            }
+        }
+    }   
+    return SUCCESS;
+}
+
+template<class T>
+void AVLTree<T>::swichPlaces(std::shared_ptr<AVLTree> v)
+{
+    T tmp = v.data;
+    v.data = data;
+    data = tmp;
 }
 
 template<class T>
@@ -236,6 +278,6 @@ std::shared_ptr<AVLTree<T>> AVLTree<T>::getFirst()
     return first;
 }
 
-template<class T>
-template<class S>
-std::shared_ptr<S> AVLTree<T>::getBestElements(int num_of_elements);
+//template<class T>
+//template<class S>
+//std::shared_ptr<S> AVLTree<T>::getBestElements(int num_of_elements);
