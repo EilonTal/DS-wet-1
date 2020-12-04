@@ -64,27 +64,28 @@ StatusType CoursesManager::WatchClass(int course_id, int class_id, int time)
     {
         return INVALID_INPUT;
     }
-    Class tmp_c (course_id, class_id, time);
-    Class *class_in_viewed_ptr = viewedTree.getElement(tmp_c);
-    if (class_in_viewed_ptr != nullptr)
+    Class *class_watched_ptr = course_of_class_ptr->getClass(class_id);
+    if (class_watched_ptr != nullptr)
     {
-        Class class_in_viewed = *class_in_viewed_ptr;
-        class_in_viewed.addTime(time);
+        viewedTree.deleteElement(*class_watched_ptr);
     }
     // class not in viewed tree so it needs to be added
     else
     {
-        Class c (course_id, class_id, time);
+        Class c = Class(course_id, class_id, 0);
         // if all classes are used - probably will never happen
         // because it is checked before
         if (course_of_class_ptr->addClass(c) != SUCCESS)
         {
             return FAILURE;
         }
-        if (viewedTree.insertElement(c) != SUCCESS)
-        {
-            return FAILURE;
-        }
+        class_watched_ptr = &c;
+        
+    }
+    class_watched_ptr->addTime(time);
+    if (viewedTree.insertElement(*class_watched_ptr) != SUCCESS)
+    {
+        return FAILURE;
     }
     return SUCCESS;
 }

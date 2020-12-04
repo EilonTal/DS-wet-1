@@ -644,5 +644,5 @@ T *AVLTree<T>::getElement(Id &data_in)
     {
         return nullptr;
     }
-    return &node->data;
+    return &(node->data);
 }

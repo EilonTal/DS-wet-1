@@ -26,7 +26,8 @@ Course::Course(Course &course)
     {
         if (course.getClass(i) != nullptr)
         {
-            classes[i] = new Class(*(course.getClass(i)));
+            Class c(*(course.getClass(i)));
+            classes[i] = &c;
         }
         else
         {
@@ -101,24 +102,23 @@ int Course::getCourseId() const
 
 StatusType Course::addClass(Class& c)
 {
-    for (int i = 0; i < numOfClasses; i++)
+
+    if (classes[c.getClassId()] == nullptr)
     {
-        if (classes[i] == nullptr)
-        {
-            classes[i] = &c;
-            return SUCCESS;
-        }
+        classes[c.getClassId()] = &c;
+        return SUCCESS;
     }
+
     return FAILURE;
 }
 
 Class* Course::getClass(int classId)
 {
-    if (courseId >= numOfClasses || courseId < 0 || classes == nullptr)
+    if (classId >= numOfClasses || classId < 0 || classes == nullptr)
     {
         return nullptr;
     }
-    return classes[courseId];
+    return classes[classId];
 }
 
 //for debuge

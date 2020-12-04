@@ -79,7 +79,7 @@ int main()
     cm.AddCourse(13, 2);
     cm.AddCourse(12, 2);
     cm.WatchClass(12, 0, 7);
-    cm.WatchClass(11, 2, 3);
+    cm.WatchClass(11, 0, 3);
     cm.WatchClass(14, 3, 8);
     cm.WatchClass(12, 1, 5);
     cm.WatchClass(13, 1, 6);
@@ -93,6 +93,7 @@ int main()
         std::cout<<courses[i]<<": "<<classes[i]<<std::endl;
     }
     print2D(cm.getCourseTree()->getTree());
+    print2D(cm.getViewedTree()->getTree());
     cm.RemoveCourse(11);
     cm.RemoveCourse(13);
     print2D(cm.getCourseTree()->getTree());
