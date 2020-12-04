@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Class.h"
 #include "library.h"
 class Course
@@ -20,8 +21,8 @@ public:
     bool operator>(int id);
     bool operator==(int id);
     int getNumOfClasses();
-    int getCourseId();
+    int getCourseId() const;
     StatusType addClass(Class& c);
     Class* getClass(int classId);
+    friend std::ostream &operator<<(std::ostream &os, const Course &c);
 };
-

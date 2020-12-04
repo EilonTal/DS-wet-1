@@ -60,3 +60,9 @@ void Class::addTime(int t)
 {
     time +=t ;
 }
+
+std::ostream &operator<<(std::ostream &os, const Class &c)
+{
+    os <<c.courseId<<":"<<c.classId<<":"<<c.time;
+    return os;
+}

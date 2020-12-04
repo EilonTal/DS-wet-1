@@ -37,9 +37,9 @@ StatusType CoursesManager::RemoveCourse(int course_id)
     }
     for (int i = 0; i < course_ptr->getNumOfClasses(); i++)
     {
-        if (course_ptr->getClass(i) != nullptr)
+        Class *c = course_ptr->getClass(i);
+        if (c != nullptr)
         {
-            Class *c = course_ptr->getClass(i);
             if (viewedTree.deleteElement(*c) != SUCCESS)
             {
                 return FAILURE;

@@ -16,14 +16,6 @@ Course::Course(int id, int num)
 
 Course::~Course()
 {
-    for (int i=0; i<numOfClasses; i++) 
-    {
-        if (classes[i] != nullptr)
-        {
-            delete classes[i];
-            classes[i] = nullptr;
-        }
-    }
     delete [] classes;
 }
 
@@ -32,27 +24,35 @@ Course::Course(Course &course)
 {
     for (int i = 0; i < numOfClasses; i++)
     {
-        classes[i] = new Class(*(course.getClass(i)));
+        if (course.getClass(i) != nullptr)
+        {
+            classes[i] = new Class(*(course.getClass(i)));
+        }
+        else
+        {
+            classes[i] = nullptr;
+        }
+        
     }
 }
 
 Course& Course::operator=(Course &course)
 {
-    for (int i = 0; i < numOfClasses; i++)
-    {
-        if (classes[i] != nullptr)
-        {
-            delete classes[i];
-            classes[i] = nullptr;
-        }
-    }
     delete[] classes;
     courseId = course.courseId;
     numOfClasses = course.numOfClasses;
     classes = new Class*[numOfClasses];
     for (int i = 0; i < numOfClasses; i++)
     {
-        classes[i] = new Class(*(course.getClass(i)));
+        
+        if (course.getClass(i) != nullptr)
+        {
+            classes[i] = new Class(*(course.getClass(i)));
+        }
+        else
+        {
+            classes[i] = nullptr;
+        }
     }
     return *this;
 }
@@ -94,7 +94,7 @@ int Course::getNumOfClasses()
     return numOfClasses;
 }
 
-int Course::getCourseId()
+int Course::getCourseId() const
 {
     return courseId;
 }
@@ -119,4 +119,12 @@ Class* Course::getClass(int classId)
         return nullptr;
     }
     return classes[courseId];
+}
+
+//for debuge
+std::ostream &operator<<(std::ostream &os, const Course &c)
+{
+    int id = c.getCourseId();
+    os << id;
+    return os;
 }

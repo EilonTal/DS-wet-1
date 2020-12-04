@@ -123,7 +123,7 @@ public:
 
 template <class T>
 AVLTree<T>::AVLTree()
-    : data(T()), height(height_of_queen), first(nullptr), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
+    : data(), height(height_of_queen), first(nullptr), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
 {
 }
 
@@ -399,7 +399,15 @@ StatusType AVLTree<T>::deleteElement(Id &data)
 {
     if (left_tree != nullptr)
     {
-        return left_tree->deleteElementAux(data);
+        if (left_tree->data == data)
+        {
+            deleteThisElement(left_tree);
+            return SUCCESS;
+        }
+        else
+        {
+            return left_tree->deleteElementAux(data);
+        }
     }
     return FAILURE;
 }
@@ -422,12 +430,16 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
             {
                 v->father->left_tree = nullptr;
                 v->father->first = v->father;
+                v->left_tree = nullptr;
+                v->right_tree = nullptr;
                 delete v;
                 v = nullptr;
             }
             else
             {
                 v->father->right_tree = nullptr;
+                v->left_tree = nullptr;
+                v->right_tree = nullptr;
                 delete v;
                 v = nullptr;
             }
@@ -435,13 +447,17 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
         }
         else if (v->left_tree == nullptr)
         {
-            v->changetoRoot(right_tree);
+            v->changetoRoot(v->right_tree);
+            v->left_tree = nullptr;
+            v->right_tree = nullptr;
             delete v;
             v = nullptr; 
         }
         else
         {
-            v->changetoRoot(left_tree);
+            v->changetoRoot(v->left_tree);
+            v->left_tree = nullptr;
+            v->right_tree = nullptr;
             delete v;
             v = nullptr;
         }
@@ -610,7 +626,7 @@ void AVLTree<T>::getBestElementsAux(T *&element, AVLTree<T>* v, int num_of_eleme
     i++;
     if (v->right_tree != nullptr)
     {
-        getBestElementsAux(element, v->right_tree, num_of_elements, i);
+        getBestElementsAux(element, v->right_tree->first, num_of_elements, i);
     }
     if (num_of_elements == i)
     {

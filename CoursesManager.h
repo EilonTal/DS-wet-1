@@ -17,5 +17,15 @@ public:
     StatusType TimeViewed(int course_id, int  class_id, int * TimeViewed);
     StatusType GetMostViewedClasses(int num_of_classes, int * courses, int * classes);
     void Quit();
+
+    //forDebuge
+    AVLTree<Course>* getCourseTree()
+    {
+        return &courseTree;
+    }
+    AVLTree<Class> *getViewedTree()
+    {
+        return &viewedTree;
+    }
 };
 

@@ -1,4 +1,5 @@
 #include <memory>
+#include <iostream>
 class Class
 {
 private:
@@ -18,5 +19,6 @@ public:
     int getCourseId();
     int getClassId();
     void addTime(int time);
+    friend std::ostream &operator<<(std::ostream &os, const Class &c);
 };
 
