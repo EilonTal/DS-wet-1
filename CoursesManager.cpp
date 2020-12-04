@@ -72,14 +72,13 @@ StatusType CoursesManager::WatchClass(int course_id, int class_id, int time)
     // class not in viewed tree so it needs to be added
     else
     {
-        Class c = Class(course_id, class_id, 0);
         // if all classes are used - probably will never happen
         // because it is checked before
-        if (course_of_class_ptr->addClass(c) != SUCCESS)
+        if (course_of_class_ptr->addClass(course_id, class_id, 0) != SUCCESS)
         {
             return FAILURE;
         }
-        class_watched_ptr = &c;
+        class_watched_ptr = course_of_class_ptr->getClass(class_id);
         
     }
     class_watched_ptr->addTime(time);
@@ -130,6 +129,7 @@ StatusType CoursesManager::GetMostViewedClasses(int num_of_classes, int *courses
         classes[i] = arr_classes[i].getClassId();
         courses[i] = arr_classes[i].getCourseId();
     }
+    delete [] arr_classes;
     if (num_of_classes == counter_of_classes)
     {
         return SUCCESS;
@@ -139,16 +139,17 @@ StatusType CoursesManager::GetMostViewedClasses(int num_of_classes, int *courses
     Course *arr_courses = courseTree.getBestElements(num_of_classes, counter_of_courses);
     for (int i = 0; i < counter_of_courses && counter_of_classes != num_of_classes; i++)
     {
-        for (int j = 0; arr_courses[i] > j && counter_of_classes != num_of_classes; j++)
+        for (int j = 0; arr_courses[i].getNumOfClasses() > j && counter_of_classes != num_of_classes; j++)
         {
             if (arr_courses[i].getClass(j) == nullptr)
             {
-                classes[counter_of_classes] = arr_courses[i].getClass(j)->getClassId();
+                classes[counter_of_classes] = j;
                 courses[counter_of_classes] = arr_courses[i].getCourseId();
                 counter_of_classes++;
             }
         }
     }
+    delete[] arr_courses;
     if (counter_of_classes != num_of_classes)
     {
         return FAILURE;

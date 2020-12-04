@@ -22,7 +22,7 @@ public:
     bool operator==(int id);
     int getNumOfClasses();
     int getCourseId() const;
-    StatusType addClass(Class& c);
+    StatusType addClass(int course_id, int class_id, int time);
     Class* getClass(int classId);
     friend std::ostream &operator<<(std::ostream &os, const Course &c);
 };

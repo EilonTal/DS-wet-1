@@ -8,7 +8,8 @@ private:
     AVLTree *right_tree;
     AVLTree *father;
     AVLTree *first;
-    const int height_of_queen = -1;
+    static const int height_of_queen = -1;
+    int num_of_elements_in_tree;
     int height;
     int balance;
     T data;
@@ -27,6 +28,7 @@ private:
 	* return the height of the tree (H(left)+H(right)+1)
 	*/
     int calculateHeight();
+    void updateNumOfElements();
     /*
 	* return the balance of the tree (H(left)-H(right))
 	*/
@@ -123,13 +125,15 @@ public:
 
 template <class T>
 AVLTree<T>::AVLTree()
-    : data(), height(height_of_queen), first(nullptr), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
+    : data(), height(height_of_queen), first(nullptr), balance(0),
+      father(nullptr), left_tree(nullptr), right_tree(nullptr), num_of_elements_in_tree(0)
 {
 }
 
 template <class T>
 AVLTree<T>::AVLTree(T &element)
-    : data(element), height(1), first(this), balance(0), father(nullptr), left_tree(nullptr), right_tree(nullptr)
+    : data(element), height(1), first(this), balance(0), father(nullptr),
+      left_tree(nullptr), right_tree(nullptr), num_of_elements_in_tree(1)
 {
 }
 
@@ -180,10 +184,12 @@ StatusType AVLTree<T>::insertElementAux(T &element)
     {
         return_value = insertToLeft(element);
         first = left_tree->first;
+        updateNumOfElements();
     }
     else
     {
         return_value = insertToRight(element);
+        updateNumOfElements();
     }
     doRoll();
     return return_value;
@@ -198,10 +204,12 @@ StatusType AVLTree<T>::insertToLeft(T &element)
         left_tree = new AVLTree(element);
         left_tree->father = this;
         first = left_tree;
+        num_of_elements_in_tree ++;
     }
     else
     {
         return_value = left_tree->insertElementAux(element);
+        updateNumOfElements();
     }
     return return_value;
 }
@@ -214,10 +222,12 @@ StatusType AVLTree<T>::insertToRight(T &element)
     {
         right_tree = new AVLTree(element);
         right_tree->father = this;
+        num_of_elements_in_tree++;
     }
     else
     {
         return_value = right_tree->insertElementAux(element);
+        updateNumOfElements();
     }
     return return_value;
 }
@@ -263,6 +273,7 @@ void AVLTree<T>::doRoll()
     }
     height = calculateHeight();
     balance = calculateBalance();
+    updateNumOfElements();
     if (balance > 1)
     {
         if (left_tree->balance >= 0)
@@ -337,6 +348,7 @@ void AVLTree<T>::LL()
     if (B->left_tree != nullptr)
     {
         B->first = B->left_tree->first;
+    
     }
     else
     {
@@ -347,6 +359,9 @@ void AVLTree<T>::LL()
     B->balance = B->calculateBalance();
     A->height = A->calculateHeight();
     A->balance = A->calculateBalance();
+    B->updateNumOfElements();
+    A->updateNumOfElements();
+    
 }
 
 template <class T>
@@ -376,6 +391,8 @@ void AVLTree<T>::RR()
     B->balance = B->calculateBalance();
     A->height = A->calculateHeight();
     A->balance = A->calculateBalance();
+    B->updateNumOfElements();
+    A->updateNumOfElements();
 }
 
 
@@ -402,11 +419,14 @@ StatusType AVLTree<T>::deleteElement(Id &data)
         if (left_tree->data == data)
         {
             deleteThisElement(left_tree);
+            updateNumOfElements();
             return SUCCESS;
         }
         else
         {
-            return left_tree->deleteElementAux(data);
+            StatusType retrun_val = left_tree->deleteElementAux(data);
+            updateNumOfElements();
+            return retrun_val;
         }
     }
     return FAILURE;
@@ -420,7 +440,8 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
         AVLTree<T> *next = v->getNextInorder();
         v->switchPlaces(next);
         deleteThisElement(next);
-
+        v->updateNumOfElements();
+        updateNumOfElements();
     }
     else
     {
@@ -434,6 +455,7 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
                 v->right_tree = nullptr;
                 delete v;
                 v = nullptr;
+                num_of_elements_in_tree--;
             }
             else
             {
@@ -442,6 +464,7 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
                 v->right_tree = nullptr;
                 delete v;
                 v = nullptr;
+                num_of_elements_in_tree--;
             }
             
         }
@@ -451,7 +474,8 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
             v->left_tree = nullptr;
             v->right_tree = nullptr;
             delete v;
-            v = nullptr; 
+            v = nullptr;
+            num_of_elements_in_tree--;
         }
         else
         {
@@ -460,9 +484,11 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
             v->right_tree = nullptr;
             delete v;
             v = nullptr;
+            num_of_elements_in_tree--;
         }
         
     }
+    updateNumOfElements();
     return SUCCESS;
 }
 
@@ -517,9 +543,12 @@ StatusType AVLTree<T>::insertElement(T &element)
     {
         left_tree = new AVLTree(element);
         left_tree->father = this;
+        num_of_elements_in_tree++;
         return SUCCESS;
     }
-    return this->left_tree->insertElementAux(element);
+    StatusType retrun_val = this->left_tree->insertElementAux(element);
+    updateNumOfElements();
+    return retrun_val;
 }
 
 template <class T>
@@ -565,6 +594,7 @@ StatusType AVLTree<T>::deleteElementAux(Id &data_in)
     if (left_tree != nullptr && left_tree->data == data_in)
     {
         deleteThisElement(left_tree);
+        updateNumOfElements();
         if (left_tree != nullptr) 
         {
             first = left_tree->first;
@@ -577,6 +607,7 @@ StatusType AVLTree<T>::deleteElementAux(Id &data_in)
     else if (right_tree != nullptr && right_tree->data == data_in)
     {
         deleteThisElement(right_tree);
+        updateNumOfElements();
     }
     else if (data > data_in)
     {
@@ -585,6 +616,7 @@ StatusType AVLTree<T>::deleteElementAux(Id &data_in)
             return FAILURE;
         }
         first = left_tree->first;
+        updateNumOfElements();
     }
     else
     {
@@ -592,6 +624,7 @@ StatusType AVLTree<T>::deleteElementAux(Id &data_in)
         {
             return FAILURE;
         }
+        updateNumOfElements();
     }
     doRoll();
     return SUCCESS;
@@ -617,7 +650,7 @@ void AVLTree<T>::getBestElementsAux(T *&element, AVLTree<T>* v, int num_of_eleme
     {
         return;
     }
-    if (num_of_elements == i)
+    if (num_of_elements == i || i == num_of_elements_in_tree)
     {
         return;
     }
@@ -628,7 +661,7 @@ void AVLTree<T>::getBestElementsAux(T *&element, AVLTree<T>* v, int num_of_eleme
     {
         getBestElementsAux(element, v->right_tree->first, num_of_elements, i);
     }
-    if (num_of_elements == i)
+    if (num_of_elements == i || i == num_of_elements_in_tree)
     {
         return;
     }
@@ -645,4 +678,24 @@ T *AVLTree<T>::getElement(Id &data_in)
         return nullptr;
     }
     return &(node->data);
+}
+
+template <class T>
+void AVLTree<T>::updateNumOfElements()
+{
+
+    int num = 0;
+    if (this->height != height_of_queen)
+    {
+        num++;
+    }
+    if (left_tree != nullptr)
+    {
+        num += left_tree->num_of_elements_in_tree;
+    }
+    if (right_tree != nullptr)
+    {
+        num += right_tree->num_of_elements_in_tree;
+    }
+    num_of_elements_in_tree = num;
 }

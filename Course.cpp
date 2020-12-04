@@ -16,7 +16,17 @@ Course::Course(int id, int num)
 
 Course::~Course()
 {
-    delete [] classes;
+    if (classes != nullptr)
+    {
+        for (int i=0; i<numOfClasses; i++)
+        {
+            if (classes[i] != nullptr)
+            {
+                delete classes[i];
+            }
+        }
+        delete [] classes;
+    }
 }
 
 Course::Course(Course &course)
@@ -26,8 +36,7 @@ Course::Course(Course &course)
     {
         if (course.getClass(i) != nullptr)
         {
-            Class c(*(course.getClass(i)));
-            classes[i] = &c;
+            classes[i] = new Class (*(course.getClass(i)));
         }
         else
         {
@@ -39,7 +48,17 @@ Course::Course(Course &course)
 
 Course& Course::operator=(Course &course)
 {
-    delete[] classes;
+    if (classes != nullptr)
+    {
+        for (int i = 0; i < numOfClasses; i++)
+        {
+            if (classes[i] != nullptr)
+            {
+                delete classes[i];
+            }
+        }
+        delete[] classes;
+    }
     courseId = course.courseId;
     numOfClasses = course.numOfClasses;
     classes = new Class*[numOfClasses];
@@ -100,12 +119,12 @@ int Course::getCourseId() const
     return courseId;
 }
 
-StatusType Course::addClass(Class& c)
+StatusType Course::addClass(int course_id, int class_id, int time)
 {
 
-    if (classes[c.getClassId()] == nullptr)
+    if (courseId == course_id && class_id < numOfClasses && classes[class_id] == nullptr)
     {
-        classes[c.getClassId()] = &c;
+        classes[class_id] = new Class(course_id, class_id, time);
         return SUCCESS;
     }
 

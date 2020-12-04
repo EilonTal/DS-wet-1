@@ -100,7 +100,7 @@ int main()
     print2D(cm.getViewedTree()->getTree());
     delete[] courses;
     delete[] classes;
-    num_to_print = 3;
+    num_to_print = 5;
     courses = new int[num_to_print];
     classes = new int[num_to_print];
     cm.GetMostViewedClasses(num_to_print, courses, classes);
