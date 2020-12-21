@@ -20,15 +20,15 @@ bool Class::operator<(Class &c)
     {
         return true;
     }
-    if (courseId < c.courseId)
+    if (courseId > c.courseId)
     {
         return false;
     }
-    if (courseId > c.courseId)
+    if (courseId < c.courseId)
     {
         return true;
     }
-    return classId > c.classId;
+    return classId < c.classId;
 }
 
 bool Class::operator>(Class &c)

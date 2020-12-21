@@ -81,7 +81,7 @@ bool Course::operator<(Course &c)
 {
     // we reversed the order of operation
     // since the "best" organ in the AVL tree is the one that has the highest ID
-    return courseId > c.courseId;
+    return courseId < c.courseId;
 }
 
 bool Course::operator>(Course &c)
@@ -101,12 +101,12 @@ bool Course::operator==(int id)
 
 bool Course::operator<(int id)
 {
-    return courseId > id;
+    return courseId < id;
 }
 
 bool Course::operator>(int id)
 {
-    return courseId < id;
+    return courseId > id;
 }
 
 int Course::getNumOfClasses()
@@ -124,7 +124,18 @@ StatusType Course::addClass(int course_id, int class_id, int time)
 
     if (courseId == course_id && class_id < numOfClasses && classes[class_id] == nullptr)
     {
-        classes[class_id] = new Class(course_id, class_id, time);
+        try
+        {
+            classes[class_id] = new Class(course_id, class_id, time);
+        }
+        catch (std::exception &e)
+        {
+            return ALLOCATION_ERROR;
+        }
+        if (classes[class_id] == nullptr)
+        {
+            return ALLOCATION_ERROR;
+        }
         return SUCCESS;
     }
 

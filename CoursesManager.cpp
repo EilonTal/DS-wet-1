@@ -2,7 +2,7 @@
 
 StatusType CoursesManager::ValidateInput(int course_id, int class_id, int num_of_classes, int time)
 {
-    if (course_id <= 0 || class_id < 0 || num_of_classes < 0 || time <= 0)
+    if (course_id <= 0 || class_id < 0 || num_of_classes <= 0 || time <= 0)
     {
         return INVALID_INPUT;
     }
@@ -51,7 +51,7 @@ StatusType CoursesManager::RemoveCourse(int course_id)
 
 StatusType CoursesManager::WatchClass(int course_id, int class_id, int time)
 {
-    if (ValidateInput(course_id, class_id, 0, time) != SUCCESS)
+    if (ValidateInput(course_id, class_id, 1, time) != SUCCESS)
     {
         return INVALID_INPUT;
     }

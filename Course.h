@@ -1,3 +1,5 @@
+#ifndef COURSE
+#define COURSE
 #include <iostream>
 #include "Class.h"
 #include "library.h"
@@ -26,3 +28,4 @@ public:
     Class* getClass(int classId);
     friend std::ostream &operator<<(std::ostream &os, const Course &c);
 };
+#endif

@@ -1,3 +1,5 @@
+#ifndef CLASS
+#define CLASS
 #include <memory>
 #include <iostream>
 class Class
@@ -22,3 +24,4 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Class &c);
 };
 
+#endif

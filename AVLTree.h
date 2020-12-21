@@ -1,5 +1,10 @@
+#ifndef AVL_TREE
+#define AVL_TREE
 #include <algorithm>
 #include "library.h"
+#include <iostream>
+#define COUNT 10
+
 template <class T>
 class AVLTree
 {
@@ -111,16 +116,6 @@ public:
     T* getElement(Id &data_in);
 
     T *getBestElements(int num_of_elements, int &counter_of_elements);
-
-    //just for chacking:
-    AVLTree *getLeftTree();
-    AVLTree *getRightTree();
-    T& getData();
-    AVLTree *getTree();
-    T& getFirst()
-    {
-        return first->data;
-    }
 };
 
 template <class T>
@@ -135,21 +130,33 @@ AVLTree<T>::AVLTree(T &element)
     : data(element), height(1), first(this), balance(0), father(nullptr),
       left_tree(nullptr), right_tree(nullptr), num_of_elements_in_tree(1)
 {
+    /*if (element.first == nullptr)
+    {
+        first = nullptr;
+    }
+    if (element.hight == 0)
+    {
+        height =
+    }*/
 }
 
 template <class T>
 AVLTree<T>::~AVLTree()
 {
-    if (left_tree != nullptr)
+    if (this != nullptr)
     {
-        delete left_tree;
-        left_tree = nullptr;
+        if (left_tree != nullptr)
+        {
+            delete left_tree;
+            left_tree = nullptr;
+        }
+        if (right_tree != nullptr)
+        {
+            delete right_tree;
+            right_tree = nullptr;
+        }
     }
-    if (right_tree != nullptr)
-    {
-        delete right_tree;
-        right_tree = nullptr;
-    }
+    
 }
 
 template <class T>
@@ -201,7 +208,18 @@ StatusType AVLTree<T>::insertToLeft(T &element)
     StatusType return_value = SUCCESS;
     if (left_tree == nullptr)
     {
-        left_tree = new AVLTree(element);
+        try
+        {
+            left_tree = new AVLTree(element);
+        }
+        catch(std::exception& e)
+        {
+            return ALLOCATION_ERROR;
+        }
+        if (left_tree == nullptr)
+        {
+            return ALLOCATION_ERROR;
+        }
         left_tree->father = this;
         first = left_tree;
         num_of_elements_in_tree ++;
@@ -220,7 +238,18 @@ StatusType AVLTree<T>::insertToRight(T &element)
     StatusType return_value = SUCCESS;
     if (right_tree == nullptr)
     {
-        right_tree = new AVLTree(element);
+        try
+        {
+            right_tree = new AVLTree(element);
+        }
+        catch (std::exception &e)
+        {
+            return ALLOCATION_ERROR;
+        }
+        if (right_tree == nullptr)
+        {
+            return ALLOCATION_ERROR;
+        }
         right_tree->father = this;
         num_of_elements_in_tree++;
     }
@@ -267,12 +296,20 @@ int AVLTree<T>::calculateBalance()
 template <class T>
 void AVLTree<T>::doRoll()
 {
-    if (this == nullptr)
+    if (this == nullptr || father == nullptr)
     {
         return;
     }
     height = calculateHeight();
     balance = calculateBalance();
+    if (left_tree != nullptr)
+    {
+        left_tree->balance = left_tree->calculateBalance();
+    }
+    if (right_tree != nullptr)
+    {
+        right_tree->balance = right_tree->calculateBalance();
+    }
     updateNumOfElements();
     if (balance > 1)
     {
@@ -296,6 +333,7 @@ void AVLTree<T>::doRoll()
             RL();
         }
     }
+    this->first = calculateFirst();
 }
 
 template <class T>
@@ -361,7 +399,7 @@ void AVLTree<T>::LL()
     A->balance = A->calculateBalance();
     B->updateNumOfElements();
     A->updateNumOfElements();
-    
+    A->first = A->calculateFirst();
 }
 
 template <class T>
@@ -382,7 +420,7 @@ void AVLTree<T>::RR()
     {
         AL_temp->father = B;
     }
-
+    B->first = B->calculateFirst();
     //update first
     A->first = B->first;
 
@@ -393,6 +431,7 @@ void AVLTree<T>::RR()
     A->balance = A->calculateBalance();
     B->updateNumOfElements();
     A->updateNumOfElements();
+    A->first = A->calculateFirst();
 }
 
 
@@ -438,8 +477,17 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
     if (v->right_tree != nullptr && v->left_tree != nullptr)
     {
         AVLTree<T> *next = v->getNextInorder();
+        AVLTree<T> *nexts_father = next->father;
         v->switchPlaces(next);
         deleteThisElement(next);
+        if (this->height == height_of_queen)
+        {
+            left_tree->getNodeAux(nexts_father->data);
+        }
+        else
+        {
+            getNodeAux(nexts_father->data);
+        }
         v->updateNumOfElements();
         updateNumOfElements();
     }
@@ -453,6 +501,8 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
                 v->father->first = v->father;
                 v->left_tree = nullptr;
                 v->right_tree = nullptr;
+                v->father = nullptr;
+                v->first = nullptr;
                 delete v;
                 v = nullptr;
                 num_of_elements_in_tree--;
@@ -462,6 +512,8 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
                 v->father->right_tree = nullptr;
                 v->left_tree = nullptr;
                 v->right_tree = nullptr;
+                v->father = nullptr;
+                v->first = nullptr;
                 delete v;
                 v = nullptr;
                 num_of_elements_in_tree--;
@@ -470,23 +522,28 @@ StatusType AVLTree<T>::deleteThisElement(AVLTree<T> *v)
         }
         else if (v->left_tree == nullptr)
         {
+            v->father->first = v->right_tree;
             v->changetoRoot(v->right_tree);
             v->left_tree = nullptr;
             v->right_tree = nullptr;
+            v->father = nullptr;
+            v->first = nullptr;
             delete v;
             v = nullptr;
             num_of_elements_in_tree--;
         }
         else
         {
+            v->father->first = v->left_tree;
             v->changetoRoot(v->left_tree);
             v->left_tree = nullptr;
             v->right_tree = nullptr;
+            v->father = nullptr;
+            v->first = nullptr;
             delete v;
             v = nullptr;
             num_of_elements_in_tree--;
         }
-        
     }
     updateNumOfElements();
     return SUCCESS;
@@ -512,23 +569,6 @@ bool AVLTree<T>::isRoot()
     return father.height == -1;
 }
 
-template <class T>
-AVLTree<T> *AVLTree<T>::getLeftTree()
-{
-    return left_tree;
-}
-
-template <class T>
-AVLTree<T> *AVLTree<T>::getRightTree()
-{
-    return right_tree;
-}
-
-template <class T>
-T& AVLTree<T>::getData()
-{
-    return data;
-}
 
 template <class T>
 AVLTree<T> *AVLTree<T>::getNextInorder()
@@ -541,7 +581,18 @@ StatusType AVLTree<T>::insertElement(T &element)
 {
     if (this->left_tree == nullptr)
     {
-        left_tree = new AVLTree(element);
+        try
+        {
+            left_tree = new AVLTree(element);
+        }
+        catch (std::exception &e)
+        {
+            return ALLOCATION_ERROR;
+        }
+        if (left_tree == nullptr)
+        {
+            return ALLOCATION_ERROR;
+        }
         left_tree->father = this;
         num_of_elements_in_tree++;
         return SUCCESS;
@@ -551,11 +602,6 @@ StatusType AVLTree<T>::insertElement(T &element)
     return retrun_val;
 }
 
-template <class T>
-AVLTree<T> *AVLTree<T>::getTree()
-{
-    return this->left_tree;
-}
 
 template <class T>
 template <class Id>
@@ -572,15 +618,24 @@ template <class T>
 template <class Id>
 AVLTree<T> *AVLTree<T>::getNodeAux(Id &data_in)
 {
+    AVLTree<T> * node;
     if (this == nullptr || data == data_in)
     {
-        return this;
+        node = this;
     }
-    if (data > data_in)
+    else if (data > data_in)
     {
-        return left_tree->getNodeAux(data_in);
+        node = left_tree->getNodeAux(data_in);
     }
-    return right_tree->getNodeAux(data_in);
+    else
+    {
+        node = right_tree->getNodeAux(data_in);
+    }
+    if (this != nullptr)
+    {
+        first = calculateFirst();
+    }
+    return node;
 }
 
 template <class T>
@@ -638,7 +693,22 @@ T *AVLTree<T>::getBestElements(int num_of_elements, int &counter_of_elements)
         return nullptr;
     }
     counter_of_elements = 0;
-    T* arr_of_elements = new T[num_of_elements];
+    try
+    {
+        T* arr_of_elements = new T[num_of_elements];
+    }
+    catch (std::exception &e)
+    {
+        return ALLOCATION_ERROR;
+    }
+    if (arr_of_elements == nullptr)
+    {
+        return ALLOCATION_ERROR;
+    }
+    if (left_tree == nullptr)
+    {
+        return nullptr;
+    }
     getBestElementsAux(arr_of_elements, left_tree->first, num_of_elements, counter_of_elements);
     return arr_of_elements;
 }
@@ -660,12 +730,16 @@ void AVLTree<T>::getBestElementsAux(T *&element, AVLTree<T>* v, int num_of_eleme
     if (v->right_tree != nullptr)
     {
         getBestElementsAux(element, v->right_tree->first, num_of_elements, i);
+
     }
     if (num_of_elements == i || i == num_of_elements_in_tree)
     {
         return;
     }
-    getBestElementsAux(element, v->father, num_of_elements, i);
+    if (v->isLeft())
+    {
+        getBestElementsAux(element, v->father, num_of_elements, i);
+    }
 }
 
 template <class T>
@@ -699,3 +773,19 @@ void AVLTree<T>::updateNumOfElements()
     }
     num_of_elements_in_tree = num;
 }
+
+template<class T>
+AVLTree<T>* AVLTree<T>::calculateFirst()
+{
+    if (this->left_tree != nullptr)
+    {
+        return left_tree->first;
+    }
+    else
+    {
+        return this;
+    }
+    
+}
+
+#endif
